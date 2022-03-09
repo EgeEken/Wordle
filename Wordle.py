@@ -7,7 +7,7 @@ def misplacedcheck(misplaced, word):
     return True
 
 def alloptions(given, misplaced, taken):
-    '''given and misplaced: dict str: int, taken: set str'''
+    '''given dict str: int, misplaced: dict set[str]: int, taken: set str'''
     word = ''
     infoind = []
     infochr = []
@@ -126,7 +126,10 @@ def main():
                     else:
                         if misplacedletter not in misplaced:
                             misplaced[misplacedletter] = set()
-                        misplaced[misplacedletter].add(misplacedletterpos - 1)
+                        if len(misplaced[misplacedletter]) >= 4:
+                            print('That letter can not both be in the word but not be in any of the 5 slots, misclick?')
+                        else:
+                            misplaced[misplacedletter].add(misplacedletterpos - 1)
             else:
                 print('That is not a letter, misclick? (Enter \'done\' if not)')
         elif misplacedletter == 'done':
@@ -136,7 +139,7 @@ def main():
     print('Misplaced letters: ' + str(misplaced))
     print('--------------------------------------------------')
     print(' ')
-    if len(misplaced) + len(given) > 5:
+    if len({mi for mi in misplaced} | {gi for gi in given}) > 5:
         print('Among the info given, there are more correct letters than 5')
         return None
     print('Enter the taken letters (for example: \'a\')')
@@ -158,12 +161,60 @@ def main():
             print('That is not A letter, misclick? (Enter \'done\' if not)')
     print(' ')
     print('--------------------------------------------------')
-    print('All info:')
+    print('All given info:')
     print('Taken letters: ' + str(taken))
     print('Given: ' + str(given))
     print('Misplaced: ' + str(misplaced))
     print('--------------------------------------------------')
-    print(' ')
+    deduce = False
+    gmismmischeck = False
+    for gmis in given:
+        for mmis in misplaced:
+            if mmis != gmis:
+                misplaced[mmis].add(given[gmis])
+                if len(misplaced[mmis]) > 4:
+                    print('Something is wrong with the info you gave for ' + mmis + ', as it stands, it\'s in the word but it\'s not in any of the 5 slots, try again.')
+                    return None
+                gmismmischeck = True
+                deduce = True
+    findeduce = False
+    for mfin in misplaced:
+        if len(misplaced[mfin]) == 4:
+            misgiven = [veryspecific for veryspecific in {0,1,2,3,4} - misplaced[mfin]]
+            given[mfin] = misgiven[0]
+            if len(given) > 5 or len({giv for giv in given} | {mis for mis in misplaced}) > 5:
+                print('Something is wrong with the info you gave, as it stands, it has more than 5 different correct letters, try again.')
+                return None
+            findeduce = True
+            deduce = True
+    if len({giv for giv in given} | {mis for mis in misplaced}) == 5: #double check
+        for gmis2 in given:
+            for mmis2 in misplaced:
+                if mmis2 != gmis2:
+                    misplaced[mmis2].add(given[gmis2])
+        for mfin2 in misplaced:
+            if len(misplaced[mfin2]) == 4:
+                misgiven2 = [veryspecific2 for veryspecific2 in {0,1,2,3,4} - misplaced[mfin2]]
+                given[mfin2] = misgiven2[0]
+    if deduce:
+        print('All deduced info:')
+        if gmismmischeck:
+            print('Misplaced (Deduced info from a character being forced to not be in a given slot): ' + str(misplaced))
+        if findeduce:
+            print('Given (Deduced info from a character being misplaced in 4 slots): ' + str(given))
+        print('--------------------------------------------------')
+        print(' ')
+    if len(given) == 5:
+        winnerlist = ['','','','','']
+        winnerres = ''
+        for winner in given:
+            winnerlist[given[winner]] = winner
+        for winnerwinner in winnerlist:
+            winnerres += winnerwinner
+        print('We have all 5 slots, the answer is: ' + winnerres + '.')
+        if winnerres not in wordliststr:
+            print('However that is not in the word list, so you probably gave some wrong info')
+        return None
     print('Information set, press enter to get possible answers')
     cont = input()
     alloptions(given, misplaced, taken)
