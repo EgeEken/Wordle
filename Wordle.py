@@ -7,7 +7,7 @@ def misplacedcheck(misplaced, word):
     return True
 
 def alloptions(given, misplaced, taken):
-    '''given dict str: int, misplaced: dict set[str]: int, taken: set str'''
+    '''given dict str: set[int], misplaced: dict str: set[int], taken: set str'''
     word = ''
     infoind = []
     infochr = []
@@ -15,7 +15,8 @@ def alloptions(given, misplaced, taken):
     i= 0
     alphabet = [[chr(a + 97) for a in range(26) if chr(a+97) not in taken] for five in range(5)]
     for g in given:
-        alphabet[given[g]] = [g]
+        for gi in given[g]:
+            alphabet[gi] = [g]
     infoind += [[l for l in misplaced[k]] for k in misplaced]
     infochr += [k for k in misplaced]
     for ind in range(len(infoind)):
@@ -59,12 +60,13 @@ def main():
     given = {}
     misplaced = {}
     taken = set()
+    givenletterposs = set()
     while givencontinue:
         print('Letter? (Enter \'done\' when finished)')
         givenletter = input()
         givenletter = givenletter.lower()
         if len(givenletter) == 1:
-            if (ord(givenletter) >= 97) and (ord(givenletter) <= 122) and (givenletter not in given):
+            if (ord(givenletter) >= 97) and (ord(givenletter) <= 122):
                 print('What is the position of ' + givenletter + '?')
                 givenletterpos = input()
                 if givenletterpos == '' or ord(givenletterpos[0]) < 48 or ord(givenletterpos[0]) > 57:
@@ -73,12 +75,16 @@ def main():
                     givenletterpos = int(givenletterpos)
                     if (not givenletterpos <= 5) or (not givenletterpos >= 1):
                         print('That position is not within 1 and 5, misclick? (Enter \'done\' if not)')
-                    elif (givenletterpos - 1) not in {given[blabla] for blabla in given}:
-                        given[givenletter] = givenletterpos - 1
+                    elif (givenletterpos - 1) not in givenletterposs:
+                        if givenletter not in given:
+                            given[givenletter] = {givenletterpos - 1}
+                        else:
+                            given[givenletter].add(givenletterpos - 1)
+                        for i in range(len(given)):
+                            for j in [given[b] for b in given][i]:
+                                givenletterposs.add(j)
                     else:
                         print('That position is full, misclick? (Enter \'done\' if not)')
-            elif givenletter in given:
-                print('That letter is already used as info, misclick? (Enter \'done\' if not)')
             else:
                 print('That is not a letter, misclick? (Enter \'done\' if not, anything else if it is)')
         elif givenletter == 'done':
@@ -89,7 +95,8 @@ def main():
     tempreslist = ['_','_','_','_','_']
     tempres = ''
     for letter in given:
-        tempreslist[given[letter]] = letter
+        for indgi in given[letter]:
+            tempreslist[indgi] = letter
     for letter2 in tempreslist:
         tempres += letter2
     print(tempres)
@@ -98,7 +105,8 @@ def main():
         wtflist = ['','','','','']
         wtfres = ''
         for wtf in given:
-            wtflist[given[wtf]] = wtf
+            for wtfgi in given[wtf]:
+                wtflist[wtfgi] = wtf
         for wtfwtf in wtflist:
             wtfres += wtfwtf
         print(wtfres)
@@ -119,7 +127,7 @@ def main():
                     print('Enter a number')
                 else:
                     misplacedletterpos = int(misplacedletterpos)
-                    if (misplacedletter in given) and (misplacedletterpos - 1 == given[misplacedletter]):
+                    if (misplacedletter in given) and (misplacedletterpos - 1 in given[misplacedletter]):
                         print('That letter can not both be and not be in that spot, misclick?')
                     elif (misplacedletterpos > 5) or (misplacedletterpos < 1):
                         print('That position is not within 1 and 5, misclick? (Enter \'done\' if not)')
@@ -171,7 +179,7 @@ def main():
     for gmis in given:
         for mmis in misplaced:
             if mmis != gmis:
-                misplaced[mmis].add(given[gmis])
+                misplaced[mmis] = misplaced[mmis] | given[gmis]
                 if len(misplaced[mmis]) > 4:
                     print('Something is wrong with the info you gave for ' + mmis + ', as it stands, it\'s in the word but it\'s not in any of the 5 slots, try again.')
                     return None
@@ -181,7 +189,9 @@ def main():
     for mfin in misplaced:
         if len(misplaced[mfin]) == 4:
             misgiven = [veryspecific for veryspecific in {0,1,2,3,4} - misplaced[mfin]]
-            given[mfin] = misgiven[0]
+            if mfin not in given:
+                given[mfin] = set()
+            given[mfin].add(misgiven[0])
             if len(given) > 5 or len({giv for giv in given} | {mis for mis in misplaced}) > 5:
                 print('Something is wrong with the info you gave, as it stands, it has more than 5 different correct letters, try again.')
                 return None
@@ -191,11 +201,13 @@ def main():
         for gmis2 in given:
             for mmis2 in misplaced:
                 if mmis2 != gmis2:
-                    misplaced[mmis2].add(given[gmis2])
+                    misplaced[mmis2] = misplaced[mmis2] | given[gmis2]
         for mfin2 in misplaced:
             if len(misplaced[mfin2]) == 4:
                 misgiven2 = [veryspecific2 for veryspecific2 in {0,1,2,3,4} - misplaced[mfin2]]
-                given[mfin2] = misgiven2[0]
+                if mfin2 not in given:
+                    given[mfin2] = set()
+                given[mfin2].add(misgiven2[0])
     if deduce:
         print('All deduced info:')
         if gmismmischeck:
