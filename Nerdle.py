@@ -24,7 +24,7 @@ def basic4floatinc(a,b,calctype):
         if b != 0:
             return a / b
         else:
-            print('Error: Division by 0')
+            #print('Error: Division by 0')
             return 0
 
 def basic4(a,b,calctype):
@@ -113,6 +113,7 @@ def calculate_rec(equation):
     if operatorcount(equation) == 0:
         #print('-----' + str(operatorcount(equation)) + '------')
         #print(equation)
+        #print(str(numop))
         #print('-----' + str(operatorcount(equation)) + '------')
         return int(equation)
     elif operatorcount(equation) == 1:
@@ -125,11 +126,21 @@ def calculate_rec(equation):
             return calculate_rec(replace_part(equation,ordercheck(equation)))
         else:
             return calculate_rec(replace_part(equation,(numop[0][0], numop[0][1], [op for op in numop[1]][0])))
-            
+
+def equalscheck(equation):
+    equalscount = 0
+    for a in equation:
+        if a == '=':
+            equalscount += 1
+    if equalscount > 1:
+        return False
+    return True
+
 def truthcheck(equation):
     #print(str(calculate_rec(equationseperate(equation)[0])) + ' = ' + equationseperate(equation)[1])
     #print(str(calculate_rec(equationseperate(equation)[0]) == int(equationseperate(equation)[1])))
-    return calculate_rec(equationseperate(equation)[0]) == int(equationseperate(equation)[1])
+    #print(equation)
+    return calculate_rec(equationseperate(equation)[0]) == calculate_rec(equationseperate(equation)[1])
 
 def misplacedcheck(misplaced, equation):
     for m in misplaced:
@@ -184,7 +195,7 @@ def alloptions(given, misplaced, taken):
                                     equation += options[7][a8]
                                     #print(equation) #-   (to debug, will spam)
                                     i += 1
-                                    if '=' in equation and operatornexttooperatorcheck(equation) and misplacedcheck(misplaced,equation) and (truthcheck(equation)):
+                                    if '=' in equation and equalscheck(equation) and operatornexttooperatorcheck(equation) and misplacedcheck(misplaced,equation) and (truthcheck(equation)):
                                         #print('--------TRUE--------')  # to see during debug
                                         print(equation)
                                         #print('--------TRUE--------')  # to see during debug
