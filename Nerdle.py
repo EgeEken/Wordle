@@ -13,20 +13,6 @@ def equationseperate(equationstr):
     result = equationstr[donea+1:]
     return [equation, result]
 
-def basic4floatinc(a,b,calctype):
-    if calctype == '+':
-        return a + b
-    elif calctype == '-':
-        return a - b
-    elif calctype == '*':
-        return a * b
-    elif calctype == '/':
-        if b != 0:
-            return a / b
-        else:
-            #print('Error: Division by 0')
-            return 0
-
 def basic4(a,b,calctype):
     if calctype == '+':
         return a + b
@@ -86,40 +72,29 @@ def replace_part(equation, part):  #part = tuple (a,b,calctype)
     a,b,c = part
     res = ''
     partcheck = a + c + b
-    removed = False
-    added = False
+    replaced = False
     for i in range(len(equation)):
-        if equation[i:i + len(partcheck)] != partcheck and not removed:
-            res += equation[i]
-        elif equation[i:i + len(partcheck)] != partcheck and removed:
-            if i == restarti - 1:
-                removed = False
-            elif not added:
+        if not replaced:
+            if equation[i:i + len(partcheck)] == partcheck:
                 res += str(basic4(int(a),int(b),c))
-                added = True
+                replaced = True
+                restarti = i + len(partcheck)
+            else:
+                res += equation[i]
         else:
-            removed = True
-            restarti = i + len(partcheck)
+            if i > restarti - 1:
+                res += equation[i]
     return res
-    
+
 def calculate_rec(equation):
-    if equation == '':
-        #print('---------DUNNO HOW THIS HAPPENS YET-----------------')
+    if equation == '':  #i dont know why these two happen yet
         return -1
     numop = operatorseperate(equation)
-    if '' in numop[0] or '' in numop[1]:
-        #print('---------DUNNO HOW THIS HAPPENS YET-----------')
+    if '' in numop[0] or '' in numop[1]: #i dont know why these two happen yet
         return -2
     if operatorcount(equation) == 0:
-        #print('-----' + str(operatorcount(equation)) + '------')
-        #print(equation)
-        #print(str(numop))
-        #print('-----' + str(operatorcount(equation)) + '------')
         return int(equation)
     elif operatorcount(equation) == 1:
-        #print('-----' + str(operatorcount(equation)) + '------')
-        #print(equation)
-        #print('-----' + str(operatorcount(equation)) + '------')
         return basic4(int(numop[0][0]), int(numop[0][1]), [op for op in numop[1]][0])
     else:
         if ordercheck(equation) != -1:
@@ -137,11 +112,8 @@ def equalscheck(equation):
     return True
 
 def truthcheck(equation):
-    #print(str(calculate_rec(equationseperate(equation)[0])) + ' = ' + equationseperate(equation)[1])
-    #print(str(calculate_rec(equationseperate(equation)[0]) == int(equationseperate(equation)[1])))
-    #print(equation)
     return calculate_rec(equationseperate(equation)[0]) == calculate_rec(equationseperate(equation)[1])
-
+    
 def misplacedcheck(misplaced, equation):
     for m in misplaced:
         if m not in equation:
@@ -193,12 +165,9 @@ def alloptions(given, misplaced, taken):
                                     equation += options[5][a6]
                                     equation += options[6][a7]
                                     equation += options[7][a8]
-                                    #print(equation) #-   (to debug, will spam)
                                     i += 1
                                     if '=' in equation and equalscheck(equation) and operatornexttooperatorcheck(equation) and misplacedcheck(misplaced,equation) and (truthcheck(equation)):
-                                        #print('--------TRUE--------')  # to see during debug
                                         print(equation)
-                                        #print('--------TRUE--------')  # to see during debug
                                         res.append(equation)
                                     equation = ''
     print('--------------------------------------------------')
