@@ -24,12 +24,12 @@ def basic4(a,b,calctype):
         if b != 0:
             if a%b != 0:
                 #print('Error: Non integer result from division')
-                return random.randint(1453,1920)
+                return random.randint(14531920,19201453)
             else:
                 return a // b
         else:
             #print('Error: Division by 0')
-            return random.randint(1453,1920)
+            return random.randint(14531920,19201453)
 
 def operatorcount(s):
     res = 0
@@ -72,12 +72,13 @@ def replace_part(equation, part):  #part = tuple (a,b,calctype)
     a,b,c = part
     res = ''
     partcheck = a + c + b
-    replaced = False
+    removed = False
+    added = False
     for i in range(len(equation)):
-        if not replaced:
+        if not removed:
             if equation[i:i + len(partcheck)] == partcheck:
                 res += str(basic4(int(a),int(b),c))
-                replaced = True
+                removed = True
                 restarti = i + len(partcheck)
             else:
                 res += equation[i]
@@ -87,10 +88,10 @@ def replace_part(equation, part):  #part = tuple (a,b,calctype)
     return res
 
 def calculate_rec(equation):
-    if equation == '':  #i dont know why these two happen yet
+    if equation == '':
         return -1
     numop = operatorseperate(equation)
-    if '' in numop[0] or '' in numop[1]: #i dont know why these two happen yet
+    if '' in numop[0] or '' in numop[1]:
         return -2
     if operatorcount(equation) == 0:
         return int(equation)
@@ -128,18 +129,20 @@ def operatornexttooperatorcheck(equation):
     return True
 
 def alloptions(given, misplaced, taken):
-    '''given dict str: set[int], misplaced: dict str: set[int], taken: set str'''
     timestart = time.time()
     equation = ''
     infoind = []
     infochr = []
     res = []
     i= 0
-    options = [[a for a in '123456789']]
-    for five in range(5):
-        options.append([a for a in '0123456789+-*/=' if a not in taken])
-    options.append([a for a in '0123456789='])
-    options.append([a for a in '0123456789'])
+    options = [[a for a in '123456789' if a not in taken]]
+    options.append([a for a in '0123456789+-*/' if a not in taken])
+    options.append([a for a in '0123456789+-*/' if a not in taken])
+    options.append([a for a in '0123456789+-*/' if a not in taken])
+    options.append([a for a in '0123456789+-*/=' if a not in taken])
+    options.append([a for a in '0123456789=' if a not in taken])
+    options.append([a for a in '0123456789=' if a not in taken])
+    options.append([a for a in '0123456789' if a not in taken])
     for g in given:
         for gi in given[g]:
             options[gi] = [g]
@@ -165,8 +168,9 @@ def alloptions(given, misplaced, taken):
                                     equation += options[5][a6]
                                     equation += options[6][a7]
                                     equation += options[7][a8]
+                                    #print(equation) #-   (to debug, will spam)
                                     i += 1
-                                    if '=' in equation and equalscheck(equation) and operatornexttooperatorcheck(equation) and misplacedcheck(misplaced,equation) and (truthcheck(equation)):
+                                    if '=' in equation and equalscheck(equation) and operatorcount(equationseperate(equation)[1]) == 0 and operatornexttooperatorcheck(equation) and misplacedcheck(misplaced,equation) and (truthcheck(equation)):
                                         print(equation)
                                         res.append(equation)
                                     equation = ''
@@ -174,7 +178,10 @@ def alloptions(given, misplaced, taken):
     print(' ')
     print('Iterated through ' + str(i) + ' 8 number/operator combinations.')
     timeend = time.time()
-    print('Took ' + str(round(timeend - timestart, 4)) + ' seconds')
+    if timeend - timestart < 60:
+        print('Took ' + str(round(timeend - timestart, 4)) + ' seconds')
+    else:
+        print('Took ' + str(int((timeend - timestart)//60)) + ' minutes and ' + str(round((timeend-timestart)%60, 4)) + ' seconds.')
     if len(res) == 0:
         print('No possible answers fit this criteria.')
         return len(res)
